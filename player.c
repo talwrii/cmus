@@ -532,6 +532,8 @@ static void _consumer_position_update(void)
 
 		player_info_priv_lock();
 		player_info_priv.pos = pos;
+        player_info_priv.byte_position = consumer_pos;
+        player_info_priv.bytes_per_second = buffer_second_size();
 
 		if (show_current_bitrate) {
 			bitrate = ip_current_bitrate(ip);
@@ -549,14 +551,19 @@ static void _consumer_position_update(void)
 static void _player_status_changed(void)
 {
 	unsigned int pos = 0;
+    static unsigned long byte_position = 0;
 
 /* 	d_print("\n"); */
-	if (consumer_status == CS_PLAYING || consumer_status == CS_PAUSED)
+	if (consumer_status == CS_PLAYING || consumer_status == CS_PAUSED) {
 		pos = consumer_pos / buffer_second_size();
+        byte_position = consumer_pos;
+    }
 
 	player_info_priv_lock();
 	player_info_priv.status = (enum player_status)consumer_status;
 	player_info_priv.pos = pos;
+    player_info_priv.byte_position = byte_position;
+    player_info_priv.bytes_per_second = buffer_second_size();
 	player_info_priv.current_bitrate = -1;
 	player_info_priv.buffer_fill = buffer_get_filled_chunks();
 	player_info_priv.buffer_size = buffer_nr_chunks;
